@@ -6,8 +6,11 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@reach/slider": "^0.11.2",
+    "@shwilliam/react-rubber-slider": "^0.1.4",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
+    "d3": "^6.2.0",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "morgan": "~1.9.1",
