@@ -1,13 +1,9 @@
 //Strutture dati
-let initialCondition ={
-    playerNames: [],
-    cowboyChoosen: [],
-    numPlayer:0,
-    handCards:[],
-    playedCards:[],
-    stats:[],
-    currentTurn:0,
-    deck:[
+function RoomCondition(){
+    this.playersData=[];
+    this.numPlayer = 0;
+    this.currentTurn = 0;
+    this.deck = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //25 Bang
         1, 1,
         2, 2, 2, 2, 2, 2,
@@ -30,8 +26,8 @@ let initialCondition ={
         19, 19,
         20,
         21,
-    ],
-    cowboysDeck:[
+    ];
+    this.cowboysDeck = [
         0,
         1,
         2,
@@ -48,10 +44,47 @@ let initialCondition ={
         13,
         14,
         15
-    ],
-    discarded:[],
-    isPlaying:false
-};
+    ];
+    this.discarded = [];
+    this.isPlaying = false;
+    this.sockets = [];
+    this.semeEstratto = -1;
+    this.numeroEstratto = -1;
+}
+function PlayerData(name){
+    this.Name = name;
+    this.Cowboy = -1;
+    this.handCard = [];
+    this.playedCard = [];
+    this.nHandCard = 0;
+    this.bullets = 5;
+    this.role = -1;
+}
+
+let CardNames = [
+    "bang",
+    "barile",
+    "birra",
+    "carabine",
+    "catbalou",
+    "diligenza",
+    "dinamite",
+    "duello",
+    "emporio",
+    "gatling",
+    "indiani",
+    "mancato",
+    "mirino",
+    "mustang",
+    "panico",
+    "prigione",
+    "remington",
+    "saloon",
+    "schofield",
+    "volcanic",
+    "wellsfargo",
+    "winchester"
+]
 let initialRoles = [0, 1, 2, 2, 3, 2, 3];
 let rooms = new Map();
 let isPermanent = [
@@ -79,9 +112,28 @@ let isPermanent = [
     true,//Winchester
 ];
 
+let message = [];
+
+
+
 //Connection variables
 
 let myIo;
+
+function playerEntered(socket, name, room){
+    if(!rooms.has(room)){
+        rooms.set(room, new RoomCondition());
+    }
+    let currRoom = rooms.get(room);
+    currRoom.sockets.push(socket.id);
+    socket.join(room);
+    currRoom.numPlayer++;
+    let newPlayer = new PlayerData(name);
+    currRoom.playersData.push(newPlayer);
+    message = "E' entrato un nuovo giocatore: "+name;
+    myIo.in(room).emit("dataChanged", currRoom, message);
+    socket.emit('forLauncher', currRoom.numPlayer-1);
+}
 
 function getRandomInt(min, max) {
     min = Math.ceil(min);
@@ -92,11 +144,11 @@ function getRandomInt(min, max) {
 function drawACard(playerId, room) {
     let currRoom = rooms.get(room);
     let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
-    currRoom.handCards[playerId].push(drawnCard);
-    currRoom.stats[playerId][1]++;
+    currRoom.playersData[playerId].handCard.push(drawnCard);
+    currRoom.playersData[playerId].nHandCard++;
     console.log("player "+playerId+" drawn the card "+ drawnCard);
-    myIo.to(room).emit('cardDrawn', playerId, drawnCard);
-    myIo.to(room).emit('statsChanged', currRoom.stats);
+    message = currRoom.playersData[playerId].Name + " ha pescato una carta";
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 function playerLeaving(socket) {
@@ -111,29 +163,27 @@ function playerLeaving(socket) {
             roomToEmit = value;
             currRoom.numPlayer--;
             playerExitedId = currRoom.sockets.findIndex((socketS)=>{
-                console.log(socketS.id+"=="+socket.id);
-                return socketS.id==socket.id;
+                console.log(socketS+"=="+socket.id);
+                return socketS==socket.id;
             });
             console.log("Index of the socket ");
             console.log(playerExitedId);
             currRoom.sockets.splice(playerExitedId, 1);
-            currRoom.playerNames.splice(playerExitedId, 1);
-            currRoom.stats.splice(playerExitedId, 1);
-            currRoom.discarded.push(currRoom.playedCards.splice(playerExitedId, 1));
-            currRoom.discarded.push(currRoom.handCards.splice(playerExitedId, 1));
+            let exitingPlayer = currRoom.playersData.splice(playerExitedId, 1)[0];
+            currRoom.discarded.push(exitingPlayer.handCard);
+            currRoom.discarded.push(exitingPlayer.playedCard);
             currRoom.discarded = currRoom.discarded.flat(5);
             console.log(currRoom.discarded);
-            console.log(currRoom.playerNames);
             console.log("Remaining "+currRoom.numPlayer);
-            myIo.to(roomToEmit).emit('playerLeft', playerExitedId, currRoom.playerNames, currRoom.playedCards, currRoom.numPlayer, currRoom.discarded);
+            message = exitingPlayer.Name + " ha lasciato il tavolo";
+            myIo.in(value).emit("dataChanged", currRoom, message);
+            myIo.in(value).emit("playerLeft", playerExitedId);
             if(playerExitedId==currRoom.currentTurn){
                 currRoom.currentTurn = (currRoom.currentTurn-1)%(currRoom.numPlayer);
                 myIo.to(value).emit('nextTurn', currRoom.currentTurn);
             }
             if(currRoom.numPlayer<=0){
-                let copyCondition =  JSON.parse(JSON.stringify(initialCondition));
-                copyCondition.sockets = [];
-                rooms.set(value, copyCondition);
+                rooms.set(value, new RoomCondition());
             }
 
         }
@@ -142,57 +192,37 @@ function playerLeaving(socket) {
 
 }
 
-function playerEntered(socket, name, room){
-    if(!rooms.has(room)){
-        let copyCondition =  JSON.parse(JSON.stringify(initialCondition));
-        copyCondition.sockets = [];
-        rooms.set(room, copyCondition);
-    }
-    let currRoom = rooms.get(room);
-    currRoom.sockets.push(socket);
-    console.log(socket.id);
-    console.log('player '+name+' entered');
-    console.log('in room '+room);
-    socket.join(room);
-    console.log(socket.rooms);
-    currRoom.numPlayer++;
-    currRoom.playerNames.push(name);
-    socket.emit('forLauncher', currRoom.numPlayer-1, currRoom.playerNames);
-    socket.in(room).broadcast.emit('exceptForLauncher', name, currRoom.playerNames);
-    currRoom.playedCards.push([]);
-    currRoom.handCards.push([]);
-    currRoom.stats.push([5, 0]);
-    currRoom.cowboyChoosen.push(-1);
-    console.log("CowboyChoosen:"+currRoom.cowboyChoosen);
-    myIo.in(room).emit("playerIsEntered", currRoom.numPlayer, currRoom.playedCards, currRoom.discarded, currRoom.stats, currRoom.cowboyChoosen);
-    myIo.in(room).emit('nextTurn', currRoom.currentTurn);
-    console.log("Connected players: " + currRoom.numPlayer+ " in room"+ room);
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function onCardPlayed(socket, userId, cardAbsId, cardId, room){
     let currRoom = rooms.get(room);
     console.log("User "+userId+" played the card "+cardAbsId+".");
     console.log("Tutte le carte giocate:");
-    console.log(currRoom.playedCards);
-    currRoom.playedCards[userId].push(currRoom.handCards[userId].splice(cardId, 1)[0]);
-    currRoom.stats[userId][1]--;
-    myIo.to(room).emit("statsChanged", currRoom.stats);
-    socket.to(room).broadcast.emit('cardPlayed', userId, cardAbsId, currRoom.playedCards, currRoom.handCards);
+    let cardPlayed = currRoom.playersData[userId].handCard.splice(cardId, 1)[0]
+    currRoom.playersData[userId].playedCard.push(cardPlayed);
+    currRoom.playersData[userId].nHandCard--;
+    message = currRoom.playersData[userId].Name + " ha giocato "+ capitalizeFirstLetter(CardNames[cardPlayed]);
+    myIo.in(room).emit("dataChanged", currRoom, message);
 
 }
 
 function nextTurn(room){
     let currRoom = rooms.get(room);
+    let lastTurn = currRoom.currentTurn;
     currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
-    myIo.to(room).emit('nextTurn', currRoom.currentTurn);
-    console.log("Now is the turn of"+currRoom.currentTurn);
+    message = currRoom.playersData[lastTurn].Name + " ha passato, adesso tocca a " + currRoom.playersData[currRoom.currentTurn].Name;
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 function cardDiscarded(socket, playerId, cardPosition, room){
     let currRoom = rooms.get(room);
-    let cardDiscardedId = currRoom.playedCards[playerId].splice(cardPosition, 1)[0];
+    let cardDiscardedId = currRoom.playersData[playerId].playedCard.splice(cardPosition, 1)[0];
     currRoom.discarded.push(cardDiscardedId);
-    socket.to(room).broadcast.emit('cardDiscarded', playerId, cardDiscardedId, currRoom.playedCards, currRoom.discarded);
+    message = currRoom.playersData[playerId].Name + " ha scartato " + CardNames[cardDiscardedId];
+    myIo.in(room).emit("dataChanged", currRoom, message);
+    myIo.in(room).emit("cardDiscarded", currRoom.discarded, message);
     console.log("user "+ playerId + " discarded the card "+ cardDiscardedId);
     console.log(currRoom.discarded);
 }
@@ -200,9 +230,11 @@ function cardDiscarded(socket, playerId, cardPosition, room){
 function drawDiscarded(socket, playerId, discardedPosition, room){
     let currRoom = rooms.get(room);
     let cardDrawedId = currRoom.discarded[discardedPosition];
-    currRoom.handCards[playerId].push(currRoom.discarded.splice(discardedPosition, 1)[0])
-    currRoom.stats[playerId][1]++;
-    socket.to(room).broadcast.emit("drawDiscarded", playerId, currRoom.discarded, cardDrawedId, currRoom.stats);
+    currRoom.playersData[playerId].handCard.push(currRoom.discarded.splice(discardedPosition, 1)[0]);
+    currRoom.playersData[playerId].nHandCard++;
+    message = currRoom.playersData[playerId].Name + " ha pescato dagli scarti " + CardNames[cardDrawedId];
+    myIo.in(room).emit("dataChanged", currRoom, message);
+    myIo.in(room).emit("drawDiscarded");
 }
 
 function shuffle(array) {
@@ -220,15 +252,21 @@ function beginGame(socket, room) {
     let currRoom = rooms.get(room);
     let roles = initialRoles.slice(0,currRoom.numPlayer);
     roles = shuffle(roles);
+    currRoom.playersData.forEach((val, idx)=>{
+        val.role = roles[idx];
+    });
     console.log("Roles: "+roles);
-    myIo.to(room).emit('beginGame', roles);
+    message = "Inizio della partita";
+    myIo.to(room).emit('beginGame');
+    myIo.in(room).emit("dataChanged", currRoom, message);
     currRoom.isPlaying = true;
 }
 
 function lifeChanged(socket, playerId, newLife, room){
     let currRoom = rooms.get(room);
-    currRoom.stats[playerId][0]=newLife;
-    myIo.to(room).emit("statsChanged", currRoom.stats);
+    currRoom.playersData[playerId].bullets=newLife;
+    message = "Le pallottole di " + currRoom.playersData[playerId].Name + " sono diventate " + newLife;
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 function drawCowboys(socket, playerID, room) {
@@ -241,28 +279,30 @@ function drawCowboys(socket, playerID, room) {
 
 function setCowboy(socket, playerId, cowboy, room) {
     let currRoom = rooms.get(room);
-    currRoom.cowboyChoosen[playerId] = cowboy;
-    myIo.to(room).emit("cowboyChanged", currRoom.cowboyChoosen);
+    currRoom.playersData[playerId].Cowboy = cowboy;
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 function extractCard(socket, room){
     let currRoom = rooms.get(room);
     let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
     currRoom.discarded.push(drawnCard);
-    seme = getRandomInt(0, 4);//0:Quadri,1:picche,2:cuori,3:fiori
-    numero = getRandomInt(0, 12);
-
-    myIo.to(room).emit('cardExtracted', currRoom.discarded, seme, numero);
+    currRoom.semeEstratto = getRandomInt(0, 4);//0:Quadri,1:picche,2:cuori,3:fiori
+    currRoom.numeroEstratto = getRandomInt(1, 13);
+    let nomiSemi = ["Fiori", "Picche", "Quadri", "Cuori"];
+    let nomiNumeri = ["Err","Asso", 'Due', "Tre", "Quattro", "Cinque", "Sei", "Sette", "Otto", "Nove", "Dieci", "Jack", "Donna", "Re"];
+    message = "E' stata estratta la carta " + nomiNumeri[currRoom.numeroEstratto] + " di " + nomiSemi[currRoom.semeEstratto];
+    myIo.in(room).emit("cardExtracted", currRoom.discarded);
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 function giveCard(socket, sender, cardIdx, receiver, room){
     let currRoom = rooms.get(room);
-    let givenCard = currRoom.playedCards[sender].splice(cardIdx, 1).flat(5);
-    currRoom.handCards[(sender+receiver)%(currRoom.numPlayer)].push(givenCard);
-    currRoom.stats[(sender+receiver)%(currRoom.numPlayer)][1]++;
-    myIo.to(room).emit("statsChanged", currRoom.stats);
-    myIo.to(room).emit('cardDrawn', (sender+receiver)%(currRoom.numPlayer), givenCard);
-    myIo.to(room).emit('playedChanged', currRoom.playedCards);
+    let givenCard = currRoom.playersData[sender].playedCard.splice(cardIdx, 1).flat(5);
+    currRoom.playersData[(sender+receiver)%(currRoom.numPlayer)].handCard.push(givenCard);
+    currRoom.playersData[(sender+receiver)%(currRoom.numPlayer)].nHandCard++;
+    message = currRoom.playersData[sender].Name + " ha passato una carta a " + currRoom.playersData[receiver].Name;
+    myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
 //Switch
