@@ -27,6 +27,30 @@ function RoomCondition(){
         20,
         21,
     ];
+    this.isPermanent = [
+        false,//Bang
+        true,//Barile
+        false,//Birra
+        true,//Carabina
+        false,//Catbalou
+        false,//Diligenza
+        true,//Dinamite
+        false,//Duello
+        false,//Emporio
+        false,//Gatling
+        false,//Indiani
+        false,//Mancato
+        true,//Mirino
+        true,//Mustang
+        false,//Panico
+        true,//Prigione
+        true,//Remington
+        false,//Saloon
+        true,//Schofield
+        true,//Volcanic
+        false,//WellsFargo
+        true,//Winchester
+    ];
     this.cowboysDeck = [
         0,
         1,
@@ -50,6 +74,8 @@ function RoomCondition(){
     this.sockets = [];
     this.semeEstratto = -1;
     this.numeroEstratto = -1;
+    this.gameState = 0;
+
 }
 function PlayerData(name){
     this.Name = name;
@@ -59,6 +85,11 @@ function PlayerData(name){
     this.nHandCard = 0;
     this.bullets = 5;
     this.role = -1;
+    this.mirino = 0;
+    this.mustang = 0;
+    this.sight = 1;
+    this.nonPermanentCard = -1;
+    this.isTarget = false;
 }
 
 let CardNames = [
@@ -113,6 +144,111 @@ let isPermanent = [
 ];
 
 let message = [];
+
+let cardsFunction = [
+    function bang(currRoom, senderId, receiverId) {
+        currRoom.playersData[receiverId].isTarget = true;
+        //currRoom.playersData[receiverId].bullets--;
+        //TODO wait for receiver to play a mancato
+    },
+    function barile(currRoom, senderId, receiverId) {
+        //TODO
+    },
+    function birra(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].bullets = currRoom.playersData[senderId].bullets<5?currRoom.playersData[senderId].bullets+1:currRoom.playersData[senderId].bullets;
+    },
+    function carabine(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].sight = 4;
+    },
+    function catbalou(currRoom, senderId, receiverId) {
+        currRoom.playersData[receiverId].isTarget = true;
+        currRoom.discarded.push(currRoom.playersData[receiverId].handCard.splice(getRandomInt(0, currRoom.playersData[receiverId].length), 1));
+        //TODO
+    },
+    function diligenza(currRoom, senderId, receiverId) {
+        let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[senderId].handCard.push(drawnCard);
+        currRoom.playersData[senderId].nHandCard++;
+        console.log("player "+senderId+" drawn the card "+ drawnCard);
+        message = currRoom.playersData[senderId].Name + " ha pescato una carta";
+
+        drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[senderId].handCard.push(drawnCard);
+        currRoom.playersData[senderId].nHandCard++;
+        console.log("player "+senderId+" drawn the card "+ drawnCard);
+        message = currRoom.playersData[senderId].Name + " ha pescato una carta";
+    },
+    function dinamite(currRoom, senderId, receiverId) {
+        //TODO
+    },
+    function duello(currRoom, senderId, receiverId) {
+        currRoom.playersData[receiverId].isTarget = true;
+        //TODO
+    },
+    function emporio(currRoom, senderId, receiverId) {
+        //TODO
+    },
+    function gatling(currRoom, senderId, receiverId) {
+
+        //TODO
+    },
+    function indiani(currRoom, senderId, receiverId) {
+        //TODO
+    },
+    function mancato(currRoom, senderId, receiverId) {
+        //TODO
+    },
+    function mirino(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].mirino = -1;
+    },
+    function mustang(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].mustang = +1;
+    },
+    function panico(currRoom, senderId, receiverId) {
+        currRoom.playersData[receiverId].isTarget = true;
+        //TODO
+    },
+    function prigione(currRoom, senderId, receiverId) {
+        currRoom.playersData[receiverId].isTarget = true;
+        //TODO
+    },
+    function remington(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].sight = 3;
+    },
+    function saloon(currRoom, senderId, receiverId) {
+        currRoom.playersData.forEach((value => {
+            value.bullets<5? value.bullets++: {};
+        }))
+    },
+    function schofield(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].sight = 2;
+    },
+    function volcanic(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].sight = 1;
+    },
+    function wellsFargo(currRoom, senderId, receiverId) {
+        let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[senderId].handCard.push(drawnCard);
+        currRoom.playersData[senderId].nHandCard++;
+        console.log("player "+senderId+" drawn the card "+ drawnCard);
+        message = currRoom.playersData[senderId].Name + " ha pescato una carta";
+
+        drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[senderId].handCard.push(drawnCard);
+        currRoom.playersData[senderId].nHandCard++;
+        console.log("player "+senderId+" drawn the card "+ drawnCard);
+        message = currRoom.playersData[senderId].Name + " ha pescato una carta";
+
+        drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[senderId].handCard.push(drawnCard);
+        currRoom.playersData[senderId].nHandCard++;
+        console.log("player "+senderId+" drawn the card "+ drawnCard);
+        message = currRoom.playersData[senderId].Name + " ha pescato una carta";
+    },
+    function winchester(currRoom, senderId, receiverId) {
+        currRoom.playersData[senderId].sight = 5;
+    }
+];
 
 
 
@@ -196,14 +332,41 @@ function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-function onCardPlayed(socket, userId, cardAbsId, cardId, room){
+let lastTimeout;
+
+function onCardPlayed(socket, userId, cardId, receiverId, room){
     let currRoom = rooms.get(room);
-    console.log("User "+userId+" played the card "+cardAbsId+".");
+
     console.log("Tutte le carte giocate:");
-    let cardPlayed = currRoom.playersData[userId].handCard.splice(cardId, 1)[0]
-    currRoom.playersData[userId].playedCard.push(cardPlayed);
+
+    let cardPlayed = currRoom.playersData[userId].handCard.splice(cardId, 1)[0];
+    cardsFunction[cardPlayed](currRoom, userId, receiverId);
+    if(currRoom.isPermanent[cardPlayed]) {
+        if(cardPlayed == 15){
+            currRoom.playersData[receiverId].playedCard.push(cardPlayed);
+        }else{
+            currRoom.playersData[userId].playedCard.push(cardPlayed);
+        }
+    }else{
+        clearTimeout(lastTimeout);
+        if(currRoom.playersData[userId].nonPermanentCard != -1){
+            currRoom.discarded.push(currRoom.playersData[userId].nonPermanentCard);
+            currRoom.playersData[userId].nonPermanentCard = -1;
+            //currRoom.playersData.forEach((value)=>{value.isTarget=false});
+        }
+        currRoom.playersData[userId].nonPermanentCard = cardPlayed;
+        lastTimeout = setTimeout(()=>{
+            if(currRoom.playersData[userId].nonPermanentCard != -1){currRoom.discarded.push(currRoom.playersData[userId].nonPermanentCard);}
+            currRoom.playersData[userId].nonPermanentCard = -1;
+            currRoom.playersData.forEach((value)=>{value.isTarget=false});
+            myIo.in(room).emit("dataChanged", currRoom, message);
+        }, 5000)
+    }
     currRoom.playersData[userId].nHandCard--;
+    console.log(currRoom.playersData[userId].Name + " ha giocato "+ capitalizeFirstLetter(CardNames[cardPlayed]));
+    //console.log(currRoom.playersData[receiverId].isTarget);
     message = currRoom.playersData[userId].Name + " ha giocato "+ capitalizeFirstLetter(CardNames[cardPlayed]);
+
     myIo.in(room).emit("dataChanged", currRoom, message);
 
 }
@@ -314,7 +477,7 @@ function socket_io(io) {
         socket.on('disconnecting', ()=>{playerLeaving(socket)});
         socket.on('playerEntered', (name, room)=>{playerEntered(socket, name, room)});
         socket.on('beginGame',(room)=>{beginGame(socket, room)});
-        socket.on('cardPlayed', (userId, cardAbsId, cardId, room)=>{onCardPlayed(socket, userId, cardAbsId, cardId, room)});
+        socket.on('cardPlayed', (userId, cardId, receiverId, room)=>{onCardPlayed(socket, userId, cardId, receiverId, room)});
         socket.on('getGameBoard', () =>{getGameBoard()});
         socket.on('cardDrawn', (playerId, room) => {drawACard(playerId, room)});
         socket.on('nextTurn', (room) => {nextTurn(room)});

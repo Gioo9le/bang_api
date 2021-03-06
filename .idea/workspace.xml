@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="787a08bf-bb7b-490d-8633-747f26980729" name="Default Changelist" comment="agg">
+    <list default="true" id="787a08bf-bb7b-490d-8633-747f26980729" name="Default Changelist" comment="Ristrutturata la gestione dei dati nelle stanze sia da server che su client">
+      <change afterPath="$PROJECT_DIR$/Procfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sockets/gameRounds.js" beforeDir="false" afterPath="$PROJECT_DIR$/sockets/gameRounds.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -16,43 +18,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sockets/gameRounds.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="486">
-              <caret line="291" column="55" selection-start-line="291" selection-start-column="55" selection-end-line="291" selection-end-column="55" />
+            <state relative-caret-position="316">
+              <caret line="472" column="7" selection-start-line="472" selection-start-column="7" selection-end-line="472" selection-end-column="7" />
               <folding>
-                <element signature="e#128#594#0" />
-                <element signature="e#617#805#0" />
-                <element signature="e#635#1075#0" />
+                <element signature="e#134#600#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_CONFIG_DIR$/javascript/nodejs/14.13.0/core-modules/internal/bootstrap/pre_execution.js">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Procfile">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="236">
-              <caret line="309" column="6" selection-start-line="309" selection-start-column="6" selection-end-line="309" selection-end-column="6" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/socket.io/lib/socket.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="100">
-              <caret line="139" selection-start-line="139" selection-end-line="139" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/has-binary2/index.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="34" column="6" selection-start-line="34" selection-start-column="6" selection-end-line="34" selection-end-column="6" />
+            <state>
+              <caret column="17" selection-start-column="17" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -79,18 +61,20 @@
       <find>myS</find>
       <find>01_.*.png</find>
       <find>01_</find>
+      <find>(currRoom, senderId, receiverId)</find>
     </findStrings>
     <replaceStrings>
       <replace />
       <replace>&quot;.*&quot;</replace>
       <replace>&quot;</replace>
+      <replace>(currRoom, senderId, receiverId)</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="groupPlayerData" />
       </map>
     </option>
   </component>
@@ -104,6 +88,7 @@
         <option value="$PROJECT_DIR$/routes/extractPlayer.js" />
         <option value="$PROJECT_DIR$/bin/www" />
         <option value="$PROJECT_DIR$/sockets/gameRounds.js" />
+        <option value="$PROJECT_DIR$/Procfile" />
       </list>
     </option>
   </component>
@@ -123,6 +108,11 @@
             <path>
               <item name="bang_api" type="b2602c69:ProjectViewProjectNode" />
               <item name="bang_api" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="bang_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="bang_api" type="462c0819:PsiDirectoryNode" />
+              <item name="bin" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="bang_api" type="b2602c69:ProjectViewProjectNode" />
@@ -198,7 +188,9 @@
       <workItem from="1604791217068" duration="669000" />
       <workItem from="1604830705949" duration="8466000" />
       <workItem from="1604869169081" duration="1058000" />
-      <workItem from="1604912853737" duration="58935000" />
+      <workItem from="1604912853737" duration="75607000" />
+      <workItem from="1606382086181" duration="339000" />
+      <workItem from="1615024465527" duration="961000" />
     </task>
     <task id="LOCAL-00001" summary="agg">
       <created>1605117790134</created>
@@ -207,11 +199,18 @@
       <option name="project" value="LOCAL" />
       <updated>1605117790134</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Ristrutturata la gestione dei dati nelle stanze sia da server che su client">
+      <created>1605194068038</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1605194068038</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="109836000" />
+    <option name="totallyTimeSpent" value="127808000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
@@ -240,9 +239,50 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list />
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="agg" />
-    <option name="LAST_COMMIT_MESSAGE" value="agg" />
+    <MESSAGE value="Ristrutturata la gestione dei dati nelle stanze sia da server che su client" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ristrutturata la gestione dei dati nelle stanze sia da server che su client" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -251,12 +291,6 @@
           <url>file://$PROJECT_DIR$/routes/index.js</url>
           <line>10</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/sockets/gameRounds.js</url>
-          <line>133</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="10" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -369,13 +403,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sockets/gameRounds.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="291" column="55" selection-start-line="291" selection-start-column="55" selection-end-line="291" selection-end-column="55" />
+        <state relative-caret-position="316">
+          <caret line="472" column="7" selection-start-line="472" selection-start-column="7" selection-end-line="472" selection-end-column="7" />
           <folding>
-            <element signature="e#128#594#0" />
-            <element signature="e#617#805#0" />
-            <element signature="e#635#1075#0" />
+            <element signature="e#134#600#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Procfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="17" selection-start-column="17" selection-end-column="17" />
         </state>
       </provider>
     </entry>
