@@ -470,26 +470,31 @@ function giveCard(socket, sender, cardIdx, receiver, room){
 
 //Switch
 function socket_io(io) {
-    myIo = io;
-    //io.on('cardPlayed', (userId, cardId)=>{onCardPlayed(userId, cardId)});
+    try {
+        myIo = io;
+        //io.on('cardPlayed', (userId, cardId)=>{onCardPlayed(userId, cardId)});
 
-    io.on('connection', function(socket){
-        socket.on('disconnecting', ()=>{playerLeaving(socket)});
-        socket.on('playerEntered', (name, room)=>{playerEntered(socket, name, room)});
-        socket.on('beginGame',(room)=>{beginGame(socket, room)});
-        socket.on('cardPlayed', (userId, cardId, receiverId, room)=>{onCardPlayed(socket, userId, cardId, receiverId, room)});
-        socket.on('getGameBoard', () =>{getGameBoard()});
-        socket.on('cardDrawn', (playerId, room) => {drawACard(playerId, room)});
-        socket.on('nextTurn', (room) => {nextTurn(room)});
-        socket.on('cardDiscarded', (playerId, cardPosition, room)=>{cardDiscarded(socket, playerId, cardPosition, room)});
-        socket.on('drawDiscarded', (playerId, discardedPosition, room)=>(drawDiscarded(socket, playerId, discardedPosition, room)));
-        socket.on('lifeChanged', (playerId, newLife, room)=>{lifeChanged(socket,playerId, newLife, room)});
-        socket.on('checkIsPlaying', (room)=>{socket.emit('isPlaying',rooms.has(room)?rooms.get(room).isPlaying:false)});
-        socket.on('drawCowboys', (playerId, room)=>{drawCowboys(socket, playerId, room)})
-        socket.on('cowBoyChoosen', (playerId, cowboy, room)=>{setCowboy(socket, playerId, cowboy, room)});
-        socket.on('cardExtracted', (room)=>{extractCard(socket, room)})
-        socket.on('cardGiven', (sender, cardIdx, receiver, room)=>giveCard(socket, sender, cardIdx, receiver, room));
-    })
+        io.on('connection', function(socket){
+            socket.on('disconnecting', ()=>{playerLeaving(socket)});
+            socket.on('playerEntered', (name, room)=>{playerEntered(socket, name, room)});
+            socket.on('beginGame',(room)=>{beginGame(socket, room)});
+            socket.on('cardPlayed', (userId, cardId, receiverId, room)=>{onCardPlayed(socket, userId, cardId, receiverId, room)});
+            socket.on('getGameBoard', () =>{getGameBoard()});
+            socket.on('cardDrawn', (playerId, room) => {drawACard(playerId, room)});
+            socket.on('nextTurn', (room) => {nextTurn(room)});
+            socket.on('cardDiscarded', (playerId, cardPosition, room)=>{cardDiscarded(socket, playerId, cardPosition, room)});
+            socket.on('drawDiscarded', (playerId, discardedPosition, room)=>(drawDiscarded(socket, playerId, discardedPosition, room)));
+            socket.on('lifeChanged', (playerId, newLife, room)=>{lifeChanged(socket,playerId, newLife, room)});
+            socket.on('checkIsPlaying', (room)=>{socket.emit('isPlaying',rooms.has(room)?rooms.get(room).isPlaying:false)});
+            socket.on('drawCowboys', (playerId, room)=>{drawCowboys(socket, playerId, room)})
+            socket.on('cowBoyChoosen', (playerId, cowboy, room)=>{setCowboy(socket, playerId, cowboy, room)});
+            socket.on('cardExtracted', (room)=>{extractCard(socket, room)})
+            socket.on('cardGiven', (sender, cardIdx, receiver, room)=>giveCard(socket, sender, cardIdx, receiver, room));
+        })
+    }catch (e) {
+        console.log(e)
+    }
+
 }
 
 module.exports.sock = socket_io;
