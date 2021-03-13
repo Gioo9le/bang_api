@@ -143,6 +143,25 @@ let isPermanent = [
     true,//Winchester
 ];
 
+let initialBullets = [
+    4,
+    4,
+    4,
+    3,
+    4,
+    4,
+    4,
+    4,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
+]
+
 let message = [];
 
 let cardsFunction = [
@@ -150,6 +169,7 @@ let cardsFunction = [
         currRoom.playersData[receiverId].isTarget = true;
         //currRoom.playersData[receiverId].bullets--;
         //TODO wait for receiver to play a mancato
+        //TODO set
     },
     function barile(currRoom, senderId, receiverId) {
         //TODO
@@ -189,7 +209,6 @@ let cardsFunction = [
         //TODO
     },
     function gatling(currRoom, senderId, receiverId) {
-
         //TODO
     },
     function indiani(currRoom, senderId, receiverId) {
@@ -344,6 +363,11 @@ function onCardPlayed(socket, userId, cardId, receiverId, room){
     if(currRoom.isPermanent[cardPlayed]) {
         if(cardPlayed == 15){
             currRoom.playersData[receiverId].playedCard.push(cardPlayed);
+            clearTimeout(lastTimeout);
+            lastTimeout = setTimeout(()=>{
+                currRoom.playersData.forEach((value)=>{value.isTarget=false});
+                myIo.in(room).emit("dataChanged", currRoom, message);
+            }, 5000)
         }else{
             currRoom.playersData[userId].playedCard.push(cardPlayed);
         }
@@ -356,7 +380,9 @@ function onCardPlayed(socket, userId, cardId, receiverId, room){
         }
         currRoom.playersData[userId].nonPermanentCard = cardPlayed;
         lastTimeout = setTimeout(()=>{
-            if(currRoom.playersData[userId].nonPermanentCard != -1){currRoom.discarded.push(currRoom.playersData[userId].nonPermanentCard);}
+            if(currRoom.playersData[userId].nonPermanentCard != -1){
+                currRoom.discarded.push(currRoom.playersData[userId].nonPermanentCard);
+            }
             currRoom.playersData[userId].nonPermanentCard = -1;
             currRoom.playersData.forEach((value)=>{value.isTarget=false});
             myIo.in(room).emit("dataChanged", currRoom, message);
@@ -374,8 +400,12 @@ function onCardPlayed(socket, userId, cardId, receiverId, room){
 function nextTurn(room){
     let currRoom = rooms.get(room);
     let lastTurn = currRoom.currentTurn;
-    currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
-    message = currRoom.playersData[lastTurn].Name + " ha passato, adesso tocca a " + currRoom.playersData[currRoom.currentTurn].Name;
+    if(currRoom.playersData[lastTurn].nHandCard > currRoom.playersData[lastTurn].bullets){
+        message = currRoom.playersData[lastTurn].Name + " non puo' passare perche' ha piu' carte che proiettili ";
+    }else{
+        currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+        message = currRoom.playersData[lastTurn].Name + " ha passato, adesso tocca a " + currRoom.playersData[currRoom.currentTurn].Name;
+    }
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
@@ -427,7 +457,9 @@ function beginGame(socket, room) {
 
 function lifeChanged(socket, playerId, newLife, room){
     let currRoom = rooms.get(room);
-    currRoom.playersData[playerId].bullets=newLife;
+
+    newLife = Math.min(newLife,initialBullets[currRoom.playersData[playerId].Cowboy])
+        currRoom.playersData[playerId].bullets=newLife;
     message = "Le pallottole di " + currRoom.playersData[playerId].Name + " sono diventate " + newLife;
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
@@ -443,6 +475,13 @@ function drawCowboys(socket, playerID, room) {
 function setCowboy(socket, playerId, cowboy, room) {
     let currRoom = rooms.get(room);
     currRoom.playersData[playerId].Cowboy = cowboy;
+    currRoom.playersData[playerId].bullets = initialBullets[cowboy];
+    for(let i=0; i<currRoom.playersData[playerId].bullets; i++) {
+        let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
+        currRoom.playersData[playerId].handCard.push(drawnCard);
+        currRoom.playersData[playerId].nHandCard++;
+        console.log("player "+playerId+" drawn the card "+ drawnCard);
+    }
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
