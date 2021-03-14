@@ -385,7 +385,13 @@ function onCardPlayed(socket, userId, cardId, receiverId, room){
             }
             currRoom.playersData[userId].nonPermanentCard = -1;
             currRoom.playersData.forEach((value)=>{value.isTarget=false});
-            currRoom.playersData.forEach((value)=>{value.nonPermanentCard = -1})
+            currRoom.playersData.forEach((value)=>{
+                if(value.nonPermanentCard!=-1){
+                    currRoom.discarded.push(value.nonPermanentCard);
+                    value.nonPermanentCard = -1
+                }
+
+            })
             myIo.in(room).emit("dataChanged", currRoom, message);
         }, 5000)
     }
