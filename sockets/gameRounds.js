@@ -409,9 +409,15 @@ function nextTurn(room){
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
-function cardDiscarded(socket, playerId, cardPosition, room){
+function cardDiscarded(socket, playerId, cardPosition, isHand, room){
     let currRoom = rooms.get(room);
-    let cardDiscardedId = currRoom.playersData[playerId].playedCard.splice(cardPosition, 1)[0];
+    let cardDiscardedId
+    if(isHand){
+        cardDiscardedId = currRoom.playersData[playerId].handCard.splice(cardPosition, 1)[0];
+    }else{
+        cardDiscardedId = currRoom.playersData[playerId].playedCard.splice(cardPosition, 1)[0];
+    }
+
     currRoom.discarded.push(cardDiscardedId);
     message = currRoom.playersData[playerId].Name + " ha scartato " + CardNames[cardDiscardedId];
     myIo.in(room).emit("dataChanged", currRoom, message);
@@ -498,11 +504,17 @@ function extractCard(socket, room){
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
 
-function giveCard(socket, sender, cardIdx, receiver, room){
+function giveCard(socket, sender, cardIdx, receiver, isHand, room){
     let currRoom = rooms.get(room);
-    let givenCard = currRoom.playersData[sender].playedCard.splice(cardIdx, 1).flat(5);
-    currRoom.playersData[(sender+receiver)%(currRoom.numPlayer)].handCard.push(givenCard);
-    currRoom.playersData[(sender+receiver)%(currRoom.numPlayer)].nHandCard++;
+    let givenCard
+    if(isHand){
+        givenCard = currRoom.playersData[sender].handCard.splice(cardIdx, 1).flat(5);
+    }else{
+        givenCard = currRoom.playersData[sender].playedCard.splice(cardIdx, 1).flat(5);
+
+    }
+    currRoom.playersData[(sender + receiver) % (currRoom.numPlayer)].handCard.push(givenCard);
+    currRoom.playersData[(sender + receiver) % (currRoom.numPlayer)].nHandCard++;
     message = currRoom.playersData[sender].Name + " ha passato una carta a " + currRoom.playersData[receiver].Name;
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
@@ -521,14 +533,14 @@ function socket_io(io) {
             socket.on('getGameBoard', () =>{getGameBoard()});
             socket.on('cardDrawn', (playerId, room) => {drawACard(playerId, room)});
             socket.on('nextTurn', (room) => {nextTurn(room)});
-            socket.on('cardDiscarded', (playerId, cardPosition, room)=>{cardDiscarded(socket, playerId, cardPosition, room)});
+            socket.on('cardDiscarded', (playerId, cardPosition, isHand, room)=>{cardDiscarded(socket, playerId, cardPosition, isHand, room)});
             socket.on('drawDiscarded', (playerId, discardedPosition, room)=>(drawDiscarded(socket, playerId, discardedPosition, room)));
             socket.on('lifeChanged', (playerId, newLife, room)=>{lifeChanged(socket,playerId, newLife, room)});
             socket.on('checkIsPlaying', (room)=>{socket.emit('isPlaying',rooms.has(room)?rooms.get(room).isPlaying:false)});
             socket.on('drawCowboys', (playerId, room)=>{drawCowboys(socket, playerId, room)})
             socket.on('cowBoyChoosen', (playerId, cowboy, room)=>{setCowboy(socket, playerId, cowboy, room)});
             socket.on('cardExtracted', (room)=>{extractCard(socket, room)})
-            socket.on('cardGiven', (sender, cardIdx, receiver, room)=>giveCard(socket, sender, cardIdx, receiver, room));
+            socket.on('cardGiven', (sender, cardIdx, receiver, isHand, room)=>giveCard(socket, sender, cardIdx, receiver, isHand, room));
         })
     }catch (e) {
         console.log(e)
