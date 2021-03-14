@@ -1,4 +1,14 @@
 //Strutture dati
+
+const gameStates = {
+    IDLE: -1,
+    BANG_PLAYED: 0,
+    EMPORIO_PLAYED: 1,
+    GATLING_PLAYED: 2,
+    INDIANI_PLAYED: 3,
+    DUELLO_PLAYED: 4,
+}
+
 function RoomCondition(){
     this.playersData=[];
     this.numPlayer = 0;
@@ -74,7 +84,7 @@ function RoomCondition(){
     this.sockets = [];
     this.semeEstratto = -1;
     this.numeroEstratto = -1;
-    this.gameState = 0;
+    this.gameState = gameStates.IDLE;
 
 }
 function PlayerData(name){
@@ -168,6 +178,10 @@ let cardsFunction = [
     function bang(currRoom, senderId, receiverId) {
         currRoom.playersData[receiverId].isTarget = true;
         //currRoom.playersData[receiverId].bullets--;
+        if(currRoom.gameState == gameStates.IDLE){
+            currRoom.gameState = gameStates.BANG_PLAYED;
+        }
+
         //TODO wait for receiver to play a mancato
         //TODO set
     },
@@ -175,7 +189,7 @@ let cardsFunction = [
         //TODO
     },
     function birra(currRoom, senderId, receiverId) {
-        currRoom.playersData[senderId].bullets = currRoom.playersData[senderId].bullets<5?currRoom.playersData[senderId].bullets+1:currRoom.playersData[senderId].bullets;
+        currRoom.playersData[senderId].bullets = Math.min(currRoom.playersData[senderId].bullets+1,initialBullets[currRoom.playersData[senderId].Cowboy])
     },
     function carabine(currRoom, senderId, receiverId) {
         currRoom.playersData[senderId].sight = 4;
@@ -183,7 +197,6 @@ let cardsFunction = [
     function catbalou(currRoom, senderId, receiverId) {
         currRoom.playersData[receiverId].isTarget = true;
         currRoom.discarded.push(currRoom.playersData[receiverId].handCard.splice(getRandomInt(0, currRoom.playersData[receiverId].length), 1));
-        //TODO
     },
     function diligenza(currRoom, senderId, receiverId) {
         let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
@@ -209,9 +222,13 @@ let cardsFunction = [
         //TODO
     },
     function gatling(currRoom, senderId, receiverId) {
+        currRoom.playersData.forEach((value)=>{value.isTarget = true})
+        currRoom.playersData[senderId].isTarget = false;
         //TODO
     },
     function indiani(currRoom, senderId, receiverId) {
+        currRoom.playersData.forEach((value)=>{value.isTarget = true})
+        currRoom.playersData[senderId].isTarget = false;
         //TODO
     },
     function mancato(currRoom, senderId, receiverId) {
@@ -236,7 +253,7 @@ let cardsFunction = [
     },
     function saloon(currRoom, senderId, receiverId) {
         currRoom.playersData.forEach((value => {
-            value.bullets<5? value.bullets++: {};
+            value.bullets = Math.min(value.bullets+1,initialBullets[value.Cowboy]);
         }))
     },
     function schofield(currRoom, senderId, receiverId) {
@@ -393,7 +410,7 @@ function onCardPlayed(socket, userId, cardId, receiverId, room){
 
             })
             myIo.in(room).emit("dataChanged", currRoom, message);
-        }, 5000)
+        }, 10000)
     }
     currRoom.playersData[userId].nHandCard--;
     console.log(currRoom.playersData[userId].Name + " ha giocato "+ capitalizeFirstLetter(CardNames[cardPlayed]));
