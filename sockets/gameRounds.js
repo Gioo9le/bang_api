@@ -438,6 +438,7 @@ function cardDiscarded(socket, playerId, cardPosition, isHand, room){
     let cardDiscardedId
     if(isHand){
         cardDiscardedId = currRoom.playersData[playerId].handCard.splice(cardPosition, 1)[0];
+        currRoom.playersData[playerId].nHandCard--;
     }else{
         cardDiscardedId = currRoom.playersData[playerId].playedCard.splice(cardPosition, 1)[0];
     }
@@ -533,6 +534,7 @@ function giveCard(socket, sender, cardIdx, receiver, isHand, room){
     let givenCard
     if(isHand){
         givenCard = currRoom.playersData[sender].handCard.splice(cardIdx, 1).flat(5);
+        currRoom.playersData[sender].nHandCard--;
     }else{
         givenCard = currRoom.playersData[sender].playedCard.splice(cardIdx, 1).flat(5);
 
