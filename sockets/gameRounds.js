@@ -197,6 +197,7 @@ let cardsFunction = [
     function catbalou(currRoom, senderId, receiverId) {
         currRoom.playersData[receiverId].isTarget = true;
         currRoom.discarded.push(currRoom.playersData[receiverId].handCard.splice(getRandomInt(0, currRoom.playersData[receiverId].length), 1));
+        currRoom.playersData[receiverId].nHandCard--;
     },
     function diligenza(currRoom, senderId, receiverId) {
         let drawnCard = currRoom.deck.splice(getRandomInt(0, currRoom.deck.length), 1)[0];
