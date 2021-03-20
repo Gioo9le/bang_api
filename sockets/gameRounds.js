@@ -100,6 +100,7 @@ function PlayerData(name){
     this.sight = 1;
     this.nonPermanentCard = -1;
     this.isTarget = false;
+    this.maxBullet = -1;
 }
 
 let CardNames = [
@@ -189,7 +190,7 @@ let cardsFunction = [
         //TODO
     },
     function birra(currRoom, senderId, receiverId) {
-        currRoom.playersData[senderId].bullets = Math.min(currRoom.playersData[senderId].bullets+1,initialBullets[currRoom.playersData[senderId].Cowboy])
+        currRoom.playersData[senderId].bullets = Math.min(currRoom.playersData[senderId].bullets+1,currRoom.playersData[senderId].maxBullet)
     },
     function carabine(currRoom, senderId, receiverId) {
         currRoom.playersData[senderId].sight = 4;
@@ -254,7 +255,7 @@ let cardsFunction = [
     },
     function saloon(currRoom, senderId, receiverId) {
         currRoom.playersData.forEach((value => {
-            value.bullets = Math.min(value.bullets+1,initialBullets[value.Cowboy]);
+            value.bullets = Math.min(value.bullets+1,value.maxBullet);
         }))
     },
     function schofield(currRoom, senderId, receiverId) {
@@ -479,6 +480,13 @@ function beginGame(socket, room) {
     roles = shuffle(roles);
     currRoom.playersData.forEach((val, idx)=>{
         val.role = roles[idx];
+        if(val.role == 0){
+            val.bullets++;
+            val.Name = val.Name + "(Sceriffo)";
+        }
+        val.maxBullet = val.bullets;
+
+
     });
     console.log("Roles: "+roles);
     message = "Inizio della partita";
@@ -490,7 +498,7 @@ function beginGame(socket, room) {
 function lifeChanged(socket, playerId, newLife, room){
     let currRoom = rooms.get(room);
 
-    newLife = Math.min(newLife,initialBullets[currRoom.playersData[playerId].Cowboy])
+    newLife = Math.min(newLife,currRoom.playersData[playerId].maxBullet)
         currRoom.playersData[playerId].bullets=newLife;
     message = "Le pallottole di " + currRoom.playersData[playerId].Name + " sono diventate " + newLife;
     myIo.in(room).emit("dataChanged", currRoom, message);
