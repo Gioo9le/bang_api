@@ -101,6 +101,7 @@ function PlayerData(name){
     this.nonPermanentCard = -1;
     this.isTarget = false;
     this.maxBullet = -1;
+    this.dead = false;
 }
 
 let CardNames = [
@@ -429,7 +430,21 @@ function nextTurn(room){
     if(currRoom.playersData[lastTurn].nHandCard > currRoom.playersData[lastTurn].bullets){
         message = currRoom.playersData[lastTurn].Name + " non puo' passare perche' ha piu' carte che proiettili ";
     }else{
-        currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+        console.log("Sta passando: "+currRoom.playersData[currRoom.currentTurn].Name)
+        if(currRoom.playersData[(currRoom.currentTurn+1)%(currRoom.numPlayer)].dead){
+            currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+            console.log("Quello dopo di lui e' morto: "+currRoom.playersData[currRoom.currentTurn].Name)
+            console.log("Quindi cerco il primo che non sia morto dopo di lui per dargli il turno")
+            while(currRoom.playersData[(currRoom.currentTurn+1)%(currRoom.numPlayer)].dead){
+                currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+                console.log("Lui e' morto quindi passo il turno a quello dopo: "+currRoom.playersData[currRoom.currentTurn].Name)
+            }
+            currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+        }else{
+            currRoom.currentTurn = (currRoom.currentTurn+1)%(currRoom.numPlayer);
+        }
+        console.log("Ho trovato il primo non morto dopo: "+currRoom.playersData[lastTurn].Name+", ed e' :"+currRoom.playersData[currRoom.currentTurn].Name)
+
         message = currRoom.playersData[lastTurn].Name + " ha passato, adesso tocca a " + currRoom.playersData[currRoom.currentTurn].Name;
     }
     myIo.in(room).emit("dataChanged", currRoom, message);
@@ -500,6 +515,10 @@ function lifeChanged(socket, playerId, newLife, room){
 
     newLife = Math.min(newLife,currRoom.playersData[playerId].maxBullet)
         currRoom.playersData[playerId].bullets=newLife;
+
+    if(currRoom.playersData[playerId].bullets <= 0){
+        currRoom.playersData[playerId].dead=true;
+    }
     message = "Le pallottole di " + currRoom.playersData[playerId].Name + " sono diventate " + newLife;
     myIo.in(room).emit("dataChanged", currRoom, message);
 }
